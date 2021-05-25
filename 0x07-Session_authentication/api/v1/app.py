@@ -25,6 +25,26 @@ else:
     from api.v1.auth.auth import Auth
     auth = Auth()
 
+@app.before_request
+def beforeRequest():
+    """
+    Before request method
+    """
+    if auth is None:
+        return
+
+    paths_list = ['/api/v1/status/', '/api/v1/unauthorized/',
+                  '/api/v1/forbidden/', '/api/v1/auth_session/login/']
+    if not auth.require_auth(request.path, paths_list):
+        return
+    if not auth.authorization_header(request)\
+       and not auth.session_cookie(request):
+        abort(401)
+    request.current_user = auth.current_user(request)
+    if request.current_user is None:
+        abort(403)
+
+
 
 @app.errorhandler(404)
 def not_found(error) -> str:
@@ -47,24 +67,6 @@ def forbidden(error) -> str:
     return jsonify({"error": "Forbidden"}), 403
 
 
-@app.before_request
-def beforeRequest():
-    """
-    Before request method
-    """
-    if auth is None:
-        return
-
-    paths_list = ['/api/v1/status/', '/api/v1/unauthorized/',
-                  '/api/v1/forbidden/', '/api/v1/auth_session/login/']
-    if not auth.require_auth(request.path, paths_list):
-        return
-    if not auth.authorization_header(request)\
-       and not auth.session_cookie(request):
-        abort(401)
-    request.current_user = auth.current_user(request)
-    if request.current_user is None:
-        abort(403)
 
 if __name__ == "__main__":
     host = getenv("API_HOST", "0.0.0.0")

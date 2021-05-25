@@ -21,6 +21,13 @@ elif os.getenv('AUTH_TYPE') == 'basic_auth':
     from api.v1.auth.basic_auth import BasicAuth
     auth = BasicAuth()
 
+elif os.getenv("AUTH_TYPE") == 'session_auth':
+    from api.v1.auth.session_auth import SessionAuth
+    auth = SessionAuth()
+else:
+    from api.v1.auth.auth import Auth
+    auth = Auth()
+
 
 @app.errorhandler(404)
 def not_found(error) -> str:
@@ -50,6 +57,7 @@ def beforeRequest():
     """
     if auth is None:
         return
+
     paths_list = ['/api/v1/status/', '/api/v1/unauthorized/',
                   '/api/v1/forbidden/', '/api/v1/auth_session/login/']
     if not auth.require_auth(request.path, paths_list):

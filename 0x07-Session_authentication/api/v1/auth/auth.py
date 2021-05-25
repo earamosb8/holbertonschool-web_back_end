@@ -3,6 +3,8 @@
 """
 from flask import request
 from typing import List, TypeVar
+import os
+import re
 
 
 class Auth:
@@ -54,4 +56,11 @@ class Auth:
         """
         Validates current user
         """
+        return None
+
+    def session_cookie(self, request=None):
+        """Return a cookie"""
+        if request:
+            session = os.getenv('SESSION_NAME')
+            return request.cookies.get(session)
         return None

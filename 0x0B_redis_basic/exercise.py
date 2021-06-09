@@ -6,17 +6,57 @@ import uuid
 
 
 def count_calls(method: Callable) -> Callable:
-    """ Count has been called """
-
+    """
+    Create and return function that increments the count
+    for that key every time the method is called and returns
+    the value returned by the original method.
+    """
     key = method.__qualname__
 
     @wraps(method)
-    def wrapper(self, *args, **kwargs):
-        """ Wrapper for decorator functionality """
+    def wrapper(self, *args, **kwds):
+        """
+        wrapper function
+        """
         self._redis.incr(key)
-        return method(self, *args, **kwargs)
-
+        return method(self, *args, **kwds)
     return wrapper
+
+
+def call_history(method: Callable) -> Callable:
+    """
+    Decorator to store the history of inputs and outputs
+    for a particular function.
+    """
+    key = method.__qualname__
+
+    @wraps(method)
+    def wrapper(self, *args):
+        """
+        wrapper function
+        """
+        self._redis.rpush("{}:inputs".format(key), str(args))
+        result = method(self, *args)
+        self._redis.rpush("{}:outputs".format(key),
+                          str(result))
+        return result
+    return wrapper
+
+
+def replay(method: Callable):
+    """Displays nthe history of calls
+    """
+    r = method.__self__._redis
+    method_name = method.__qualname__
+
+    inputs = r.lrange("{}:inputs".format(method_name), 0, -1)
+    outputs = r.lrange("{}:outputs".format(method_name), 0, -1)
+
+    print("{} was called {} times:".format(method_name,
+          r.get(method_name).decode("utf-8")))
+    for i, o in tuple(zip(inputs, outputs)):
+        print("{}(*('{}',)) -> {}".format(method_name, i.decode("utf-8"),
+              o.decode("utf-8")))
 
 
 class Cache:

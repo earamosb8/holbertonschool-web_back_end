@@ -18,6 +18,7 @@ def count_calls(method: Callable) -> Callable:
 
     return wrapper
 
+
 class Cache:
     """ Cache """
     def __init__(self):

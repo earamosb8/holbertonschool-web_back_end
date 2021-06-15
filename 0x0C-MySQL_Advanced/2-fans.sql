@@ -1,6 +1,5 @@
---task 2 Best band ever!
-SELECT origin AS origin, SUM(fans) AS nb_fans 
-FROM metal_bands 
-GROUP BY origin 
-ORDER BY nb_fans DESC;
+-- task 2 Best band ever!
+SELECT DISTINCT `origin`, SUM(`fans`) as `nb_fans` FROM `metal_bands`
+GROUP BY `origin`
+ORDER BY `nb_fans` DESC;
 

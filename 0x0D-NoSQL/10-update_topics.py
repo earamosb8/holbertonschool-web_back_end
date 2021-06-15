@@ -9,4 +9,3 @@ def update_topics(mongo_collection, name, topics):
     """
     query: dict = {'name': name}
     mongo_collection.update_many(query, {"$set": {"topics": topics}})
-© 2021 GitHub, Inc.
